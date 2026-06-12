@@ -14,13 +14,43 @@ const MIME = {
 };
 
 const server = http.createServer((req, res) => {
-  if (req.method !== 'GET') {
-    res.writeHead(405, { Allow: 'GET' });
-    res.end('Method Not Allowed');
+  const urlPathname = new URL(req.url, 'http://localhost').pathname;
+
+  if (req.method === 'POST') {
+    const match = urlPathname.match(/^\/presets\/([^/]+)$/);
+    if (!match) {
+      res.writeHead(404);
+      res.end('Not found');
+      return;
+    }
+    const id = match[1].replace(/\.json$/, '');
+    if (!/^[\w-]+$/.test(id)) {
+      res.writeHead(400);
+      res.end('Invalid face ID');
+      return;
+    }
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try { JSON.parse(body); } catch {
+        res.writeHead(400);
+        res.end('Invalid JSON');
+        return;
+      }
+      fs.writeFile(path.join(PRESETS_DIR, `${id}.json`), body, (err) => {
+        if (err) { res.writeHead(500); res.end('Server error'); return; }
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ id }));
+      });
+    });
     return;
   }
 
-  const urlPathname = new URL(req.url, 'http://localhost').pathname;
+  if (req.method !== 'GET') {
+    res.writeHead(405, { Allow: 'GET, POST' });
+    res.end('Method Not Allowed');
+    return;
+  }
 
   let filePath;
   if (urlPathname === '/presets/') {

@@ -108,6 +108,30 @@
       color: #aaa;
       min-height: 1.2em;
     }
+
+    #drop-zone {
+      border: 2px dashed #444;
+      border-radius: 6px;
+      padding: 1.5rem;
+      text-align: center;
+      color: #888;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    #drop-zone.over {
+      border-color: #1976d2;
+      color: #eee;
+    }
+
+    #upload-feedback {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      min-height: 1.2em;
+    }
+
+    #upload-feedback.ok  { color: #4caf50; }
+    #upload-feedback.err { color: #f44336; }
   </style>
 </head>
 <body>
@@ -126,6 +150,15 @@
       <button onclick="refreshFaces()" title="Refresh face list">&#8635;</button>
     </div>
     <div id="faces-list"></div>
+  </section>
+
+  <section>
+    <h2>Upload preset</h2>
+    <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+      Drop a face JSON here, or click to browse
+      <input id="file-input" type="file" accept=".json" style="display:none" onchange="handleFiles(this.files)">
+    </div>
+    <div id="upload-feedback"></div>
   </section>
 
   <section>
@@ -207,6 +240,45 @@
 
     function refreshFaces() {
       topics.listFaces.publish(new ROSLIB.Message({}));
+    }
+
+    const dropZone = document.getElementById('drop-zone');
+    const uploadFeedback = document.getElementById('upload-feedback');
+
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('over');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+      Array.from(files).forEach(file => {
+        if (!file.name.endsWith('.json')) {
+          setUploadFeedback('err', `${file.name} is not a JSON file`);
+          return;
+        }
+        const id = file.name.slice(0, -5);
+        const reader = new FileReader();
+        reader.onload = (e) => uploadPreset(id, e.target.result);
+        reader.readAsText(file);
+      });
+    }
+
+    function uploadPreset(id, content) {
+      fetch(`/presets/${id}`, { method: 'POST', body: content })
+        .then(r => {
+          if (!r.ok) return r.text().then(t => { throw new Error(t); });
+          setUploadFeedback('ok', `Saved "${id}" to presets`);
+          refreshFaces();
+        })
+        .catch(err => setUploadFeedback('err', `Upload failed: ${err.message}`));
+    }
+
+    function setUploadFeedback(type, text) {
+      uploadFeedback.className = type;
+      uploadFeedback.textContent = text;
     }
   </script>
 </body>
