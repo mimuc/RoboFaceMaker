@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RoboFace Admin</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #1a1a1a;
+      color: #eee;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1 {
+      margin: 0 0 0.25rem;
+      font-size: 1.4rem;
+    }
+
+    #status-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    #status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #555;
+      flex-shrink: 0;
+    }
+
+    #status-dot.connected    { background: #4caf50; }
+    #status-dot.disconnected { background: #f44336; }
+    #status-dot.error        { background: #ff9800; }
+
+    section {
+      background: #2a2a2a;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    section h2 {
+      margin: 0 0 1rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888;
+    }
+
+    .row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select, input[type="text"] {
+      background: #1a1a1a;
+      color: #eee;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.95rem;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    button {
+      background: #333;
+      color: #eee;
+      border: 1px solid #555;
+      border-radius: 6px;
+      padding: 0.5rem 1.1rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:hover  { background: #444; }
+    button:active { background: #555; }
+
+    button.primary {
+      background: #1565c0;
+      border-color: #1976d2;
+    }
+    button.primary:hover  { background: #1976d2; }
+    button.primary:active { background: #1e88e5; }
+
+    button.danger {
+      background: #b71c1c;
+      border-color: #c62828;
+    }
+    button.danger:hover  { background: #c62828; }
+    button.danger:active { background: #d32f2f; }
+
+    #faces-list {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: #aaa;
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>RoboFace Admin</h1>
+  <div id="status-bar">
+    <div id="status-dot"></div>
+    <span id="status-text">Connecting…</span>
+  </div>
+
+  <section>
+    <h2>Face</h2>
+    <div class="row">
+      <select id="face-select"><option value="">— select face —</option></select>
+      <button class="primary" onclick="loadFace()">Load</button>
+      <button onclick="refreshFaces()" title="Refresh face list">&#8635;</button>
+    </div>
+    <div id="faces-list"></div>
+  </section>
+
+  <section>
+    <h2>Playback</h2>
+    <div class="row">
+      <button class="primary" onclick="play('once')">Play once</button>
+      <button class="primary" onclick="play('loop')">Play loop</button>
+      <button onclick="pause()">Pause</button>
+      <button class="danger" onclick="stop()">Stop</button>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const rosbridgeUrl = params.get('rosbridge') || 'ws://localhost:9090';
+
+    const ros = new ROSLIB.Ros({ url: rosbridgeUrl });
+
+    const statusDot  = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+
+    function setStatus(state, text) {
+      statusDot.className = state;
+      statusText.textContent = text;
+    }
+
+    ros.on('connection', () => {
+      setStatus('connected', `Connected to ${rosbridgeUrl}`);
+      refreshFaces();
+    });
+    ros.on('error',  () => setStatus('error', 'Connection error'));
+    ros.on('close',  () => {
+      setStatus('disconnected', 'Disconnected — retrying…');
+      setTimeout(() => ros.connect(rosbridgeUrl), 3000);
+    });
+
+    const topics = {
+      loadFace:  new ROSLIB.Topic({ ros, name: '/roboface/load_face',  messageType: 'std_msgs/String' }),
+      play:      new ROSLIB.Topic({ ros, name: '/roboface/play',       messageType: 'std_msgs/String' }),
+      pause:     new ROSLIB.Topic({ ros, name: '/roboface/pause',      messageType: 'std_msgs/Empty'  }),
+      stop:      new ROSLIB.Topic({ ros, name: '/roboface/stop',       messageType: 'std_msgs/Empty'  }),
+      listFaces: new ROSLIB.Topic({ ros, name: '/roboface/list_faces', messageType: 'std_msgs/Empty'  }),
+      facesList: new ROSLIB.Topic({ ros, name: '/roboface/faces_list', messageType: 'std_msgs/String' }),
+    };
+
+    topics.facesList.subscribe((msg) => {
+      const faces = JSON.parse(msg.data);
+      const sel = document.getElementById('face-select');
+      const current = sel.value;
+      sel.innerHTML = '<option value="">— select face —</option>';
+      faces.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = f;
+        sel.appendChild(opt);
+      });
+      if (current) sel.value = current;
+      document.getElementById('faces-list').textContent =
+        faces.length ? `${faces.length} face(s) available` : 'No faces found in presets/';
+    });
+
+    function loadFace() {
+      const id = document.getElementById('face-select').value;
+      if (!id) return;
+      topics.loadFace.publish(new ROSLIB.Message({ data: id }));
+    }
+
+    function play(mode) {
+      topics.play.publish(new ROSLIB.Message({ data: mode }));
+    }
+
+    function pause() {
+      topics.pause.publish(new ROSLIB.Message({}));
+    }
+
+    function stop() {
+      topics.stop.publish(new ROSLIB.Message({}));
+    }
+
+    function refreshFaces() {
+      topics.listFaces.publish(new ROSLIB.Message({}));
+    }
+  </script>
+</body>
+</html>
