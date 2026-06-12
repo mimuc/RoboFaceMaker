@@ -17,6 +17,11 @@ npm start
 
 The server starts at `http://localhost:3000`. Open that URL in a browser on the robot display.
 
+| Page | URL | Purpose |
+|---|---|---|
+| Display | `http://localhost:3000` | Fullscreen face display for the robot screen |
+| Admin | `http://localhost:3000/admin.html` | Control panel — load faces, trigger playback commands |
+
 ## Configuration
 
 Append URL query params to override defaults:
