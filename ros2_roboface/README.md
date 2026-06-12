@@ -30,12 +30,14 @@ Example: `http://localhost:3000?rosbridge=ws://robot.local:9090`
 
 ## ROS topic interface
 
-| Topic | Type | Payload |
-|---|---|---|
-| `/roboface/load_face` | `std_msgs/String` | Face ID — filename without `.json` (e.g. `"happy"`) |
-| `/roboface/play` | `std_msgs/String` | `"once"` or `"loop"` |
-| `/roboface/pause` | `std_msgs/Empty` | — |
-| `/roboface/stop` | `std_msgs/Empty` | — |
+| Topic | Type | Direction | Payload |
+|---|---|---|---|
+| `/roboface/load_face` | `std_msgs/String` | → node | Face ID — filename without `.json` (e.g. `"happy"`) |
+| `/roboface/play` | `std_msgs/String` | → node | `"once"` or `"loop"` |
+| `/roboface/pause` | `std_msgs/Empty` | → node | — |
+| `/roboface/stop` | `std_msgs/Empty` | → node | — |
+| `/roboface/list_faces` | `std_msgs/Empty` | → node | Triggers a faces list response |
+| `/roboface/faces_list` | `std_msgs/String` | ← node | JSON array of available face IDs, e.g. `["happy","sad"]` |
 
 ### Example commands
 
@@ -54,6 +56,10 @@ ros2 topic pub --once /roboface/pause std_msgs/Empty "{}"
 
 # Stop and reset to first frame
 ros2 topic pub --once /roboface/stop std_msgs/Empty "{}"
+
+# Request list of available faces (response arrives on /roboface/faces_list)
+ros2 topic pub --once /roboface/list_faces std_msgs/Empty "{}"
+ros2 topic echo --once /roboface/faces_list
 ```
 
 ## Face JSON format

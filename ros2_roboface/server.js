@@ -23,7 +23,21 @@ const server = http.createServer((req, res) => {
   const urlPathname = new URL(req.url, 'http://localhost').pathname;
 
   let filePath;
-  if (urlPathname.startsWith('/presets/')) {
+  if (urlPathname === '/presets/') {
+    fs.readdir(PRESETS_DIR, (err, files) => {
+      if (err) {
+        res.writeHead(500);
+        res.end('Server error');
+        return;
+      }
+      const faces = files
+        .filter(f => f.endsWith('.json'))
+        .map(f => f.slice(0, -5));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(faces));
+    });
+    return;
+  } else if (urlPathname.startsWith('/presets/')) {
     filePath = path.join(PRESETS_DIR, urlPathname.slice('/presets/'.length));
   } else {
     const urlPath = urlPathname === '/' ? '/index.html' : urlPathname;

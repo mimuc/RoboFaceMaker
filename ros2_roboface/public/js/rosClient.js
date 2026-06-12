@@ -49,6 +49,18 @@ function connectRosBridge(sm, rosbridgeUrl) {
     messageType: 'std_msgs/Empty',
   });
 
+  const listFacesTopic = new ROSLIB.Topic({
+    ros,
+    name: '/roboface/list_faces',
+    messageType: 'std_msgs/Empty',
+  });
+
+  const facesListTopic = new ROSLIB.Topic({
+    ros,
+    name: '/roboface/faces_list',
+    messageType: 'std_msgs/String',
+  });
+
   loadFaceTopic.subscribe((msg) => {
     console.log('loadFace:', msg.data);
     sm.loadFace(msg.data);
@@ -68,5 +80,15 @@ function connectRosBridge(sm, rosbridgeUrl) {
   stopTopic.subscribe(() => {
     console.log('stop');
     sm.stop();
+  });
+
+  listFacesTopic.subscribe(() => {
+    fetch('/presets/')
+      .then(r => r.json())
+      .then(faces => {
+        console.log('list_faces:', faces);
+        facesListTopic.publish(new ROSLIB.Message({ data: JSON.stringify(faces) }));
+      })
+      .catch(err => console.error('list_faces error:', err));
   });
 }
