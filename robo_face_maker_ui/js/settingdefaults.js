@@ -1,0 +1,188 @@
+/**
+ * Default positional offsets used for initial SVG element placements in the face generator.
+ * These are typically used as reference points for applying transformations (translate, scale, rotate).
+ * @type {Object.<string, { StartOffsetX: number, StartOffsetY: number }>}
+ */
+paramsDefault = {
+    "EyeLeft": {
+        "StartOffsetX": 250,
+        "StartOffsetY": 270,
+    },
+    "EyeRight": {
+        "StartOffsetX": 750,
+        "StartOffsetY": 270,
+    },
+    "Mouth": {
+        "StartOffsetX": 500,
+        "StartOffsetY": 525,
+    },
+    "BrowLeft" : {
+        "StartOffsetX": 250,
+        "StartOffsetY": 100
+    },
+    
+    "BrowRight" : {
+        "StartOffsetX": 750,
+        "StartOffsetY": 100
+    }
+}
+
+/**
+ * UI configuration object for sliders, checkboxes, dropdowns, and buttons.
+ * This drives the dynamic generation of UI controls for face part manipulation.
+ * @type {Object.<string, Object<string, { type: string, min?: number, max?: number, step?: number, options?: string[], default?: any }>}
+ */
+const paramsDefaultUI = {
+    "Settings": {
+        "IsMenu": "true",
+        "BackgroundColor": { "type": "color", "default": "#FFFFFF" },
+        "PresetSelector": { "type": "dropdown", "options": Object.keys(facePresets)},
+    },
+    "BrowLeft": {
+        "IsMenu": "true",
+        "Enabled": {"type": "checkbox"},
+        "Mirror": { "type": "checkbox" },
+        "TranslateX": { "type": "range", "min": -200.0, "max": 200.0, "step": 1.0 }, 
+        "TranslateY": { "type": "range", "min": -150.0, "max": 150.0, "step": 1.0 }, 
+        "ScaleX": { "type": "range", "min": 0.25, "max": 3.0, "step": 0.1 },        
+        "ScaleY": { "type": "range", "min": 0.25, "max": 3.0, "step": 0.1 },        
+        "Rotation": { "type": "range", "min": -67.5, "max": 67.5, "step": 1.0 },    
+        "Curvature": { "type": "range", "min": -75.0, "max": 75.0, "step": 1.0 },   
+        "Thickness": { "type": "range", "min": 1.0, "max": 30.0, "step": 0.5 },     
+        "Length": { "type": "range", "min": 45.0, "max": 100.0, "step": 1.0 },      
+        "ColorStroke": { "type": "color", "default": "#000000" }
+    },
+
+    "BrowRight": {
+        "IsMenu": "true",
+        "Enabled": {"type": "checkbox"},
+        "TranslateX": { "type": "range", "min": -200.0, "max": 200.0, "step": 1.0 }, 
+        "TranslateY": { "type": "range", "min": -150.0, "max": 150.0, "step": 1.0 }, 
+        "ScaleX": { "type": "range", "min": 0.25, "max": 3.0, "step": 0.1 },        
+        "ScaleY": { "type": "range", "min": 0.25, "max": 3.0, "step": 0.1 },        
+        "Rotation": { "type": "range", "min": -67.5, "max": 67.5, "step": 1.0 },     
+       "Curvature": { "type": "range", "min": -75.0, "max": 75.0, "step": 1.0 },   
+        "Thickness": { "type": "range", "min": 1.0, "max": 30.0, "step": 0.5 },    
+        "Length": { "type": "range", "min": 45.0, "max": 100.0, "step": 1.0 },     
+        "ColorStroke": { "type": "color", "default": "#000000" }
+    },
+    "EyeLeft": {
+        "IsMenu": "true",
+        "Mirror": { "type": "checkbox" },
+        "TranslateX": { "type": "range", "min": -200.0, "max": 180.0, "step": 1.0 },
+        "TranslateY": { "type": "range", "min": -200.0, "max": 200.0, "step": 1.0 },
+        "ScaleX": { "type": "range", "min": 0.05, "max": 2.0, "step": 0.05 },
+        "ScaleY": { "type": "range", "min": 0.05, "max": 1.8, "step": 0.05 },
+        "Rotation": { "type": "range", "min": 0.0, "max": 360.0, "step": 1.0 },
+        "ColorFill": { "type": "color", "default": "#000000" },
+        "StrokeWidth": { "type": "range", "min": 1.0, "max": 40.0, "step": 0.1 },
+        "ColorStroke": { "type": "color", "default": "#000000" },
+        "GlobalCurvature": { "type": "range", "min": 0.0, "max": 20.5, "step": 1.0 },
+        "Curvature1": { "type": "range", "min": -20.0, "max": 20.5, "step": 1.0 },
+        "Curvature2": { "type": "range", "min": -20.0, "max": 20.5, "step": 1.0 },
+        "Curvature3": { "type": "range", "min": -20.0, "max": 20.5, "step": 1.0 },
+        "Curvature4": { "type": "range", "min": -20.0, "max": 20.5, "step": 1.0 },
+        //"Roundness1": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        //"Roundness2": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        //"Roundness3": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        //"Roundness4": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        "Iris": {
+            "IsMenu": "true",
+            "Mimic": { "type": "button" },
+            "TranslateX": { "type": "range", "min": -200.0, "max": 180.0, "step": 1.0 },
+            "TranslateY": { "type": "range", "min": -200.0, "max": 200.0, "step": 1.0 },
+            "ScaleX": { "type": "range", "min": 0.05, "max": 2.0, "step": 0.05 },
+            "ScaleY": { "type": "range", "min": 0.05, "max": 2.0, "step": 0.05 },
+            "Rotation": { "type": "range", "min": 0.0, "max": 360.0, "step": 1.0 },
+            "ColorFill": { "type": "color", "default": "#000000" },
+            "GlobalCurvature": { "type": "range", "min": 0.0, "max": 12, "step": 1.0 },
+            "Curvature1": { "type": "range", "min": -10.0, "max": 12.0, "step": 1.0 },
+            "Curvature2": { "type": "range", "min": -10.0, "max": 12.0, "step": 1.0 },
+            "Curvature3": { "type": "range", "min": -10.0, "max": 12.0, "step": 1.0 },
+            "Curvature4": { "type": "range", "min": -10.0, "max": 12.0, "step": 1.0 },
+            //"Roundness1": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+            //"Roundness2": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+            //"Roundness3": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+            //"Roundness4": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        },
+    },
+    "EyeRight": {
+        "IsMenu": "true",
+        "TranslateX": { "type": "range", "min": -200.0, "max": 180.0, "step": 1.0 },
+        "TranslateY": { "type": "range", "min": -200.0, "max": 200.0, "step": 1.0 },
+        "ScaleX": { "type": "range", "min": 0.05, "max": 2.0, "step": 0.05 },
+        "ScaleY": { "type": "range", "min": 0.05, "max": 1.8, "step": 0.05 },
+        "Rotation": { "type": "range", "min": 0.0, "max": 360.0, "step": 1.0 },
+        "ColorFill": { "type": "color", "default": "#000000" },
+        "StrokeWidth": { "type": "range", "min": 1.0, "max": 40.0, "step": 0.1 },
+        "ColorStroke": { "type": "color", "default": "#000000" },
+        "GlobalCurvature": { "type": "range", "min": 0.0, "max": 20.5, "step": 1.0 },
+        "Curvature1": { "type": "range", "min": -20, "max": 20.5, "step": 1.0 },
+        "Curvature2": { "type": "range", "min": -20, "max": 20.5, "step": 1.0 },
+        "Curvature3": { "type": "range", "min": -20, "max": 20.5, "step": 1.0 },
+        "Curvature4": { "type": "range", "min": -20, "max": 20.5, "step": 1.0 },
+        //"Roundness1": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        //"Roundness2": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        //"Roundness3": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        //"Roundness4": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        "Iris": {
+            "IsMenu": "true",
+            "Mimic": { "type": "button" },
+            "TranslateX": { "type": "range", "min": -200.0, "max": 180.0, "step": 1.0 },
+            "TranslateY": { "type": "range", "min": -200.0, "max": 200.0, "step": 1.0 },
+            "ScaleX": { "type": "range", "min": 0.05, "max": 2.0, "step": 0.05 },
+            "ScaleY": { "type": "range", "min": 0.05, "max": 2.0, "step": 0.05 },
+            "Rotation": { "type": "range", "min": 0.0, "max": 360.0, "step": 1.0 },
+            "ColorFill": { "type": "color", "default": "#000000" },
+            "GlobalCurvature": { "type": "range", "min": 0.0, "max": 12, "step": 1.0 },
+            "Curvature1": { "type": "range", "min": -10.0, "max": 12.0, "step": 1.0 },
+            "Curvature2": { "type": "range", "min": -10.0, "max": 12.0, "step": 1.0 },
+            "Curvature3": { "type": "range", "min": -10.0, "max": 12.0, "step": 1.0 },
+            "Curvature4": { "type": "range", "min": -10.0, "max": 12.0, "step": 1.0 },
+            //"Roundness1": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+            //"Roundness2": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+            //"Roundness3": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+            //"Roundness4": { "type": "range", "min": -5.0, "max": 0.0, "step": 1.0 },
+        },
+    },
+    "Mouth": {
+        "IsMenu": "true",
+        "Enabled": {"type": "checkbox"},
+        "TranslateX": { "type": "range", "min": -350.0, "max": 350.0, "step": 1.0 },
+        "TranslateY": { "type": "range", "min": -110.0, "max": 110.0, "step": 1.0 },
+        "ScaleX": { "type": "range", "min": 0.05, "max": 4.8, "step": 0.05 },
+        "ScaleY": { "type": "range", "min": 0.05, "max": 1.6, "step": 0.05 },
+        "Rotation": { "type": "range", "min": 0.0, "max": 360.0, "step": 1.0 },
+        "ColorFill": { "type": "color", "default": "#000000" },
+        "StrokeWidth": { "type": "range", "min": 1.0, "max": 40.0, "step": 0.1 },
+        "ColorStroke": { "type": "color", "default": "#000000" },
+        "GlobalCurvature": { "type": "range", "min": 0.0, "max": 10, "step": 1.0 },
+        "Curvature1": { "type": "range", "min": -50.0, "max": 50.0, "step": 1.0 },
+        "Curvature2": { "type": "range", "min": -50.0, "max": 50.0, "step": 1.0 },
+        "Curvature3": { "type": "range", "min": -50.0, "max": 50.0, "step": 1.0 },
+        "Curvature4": { "type": "range", "min": -50.0, "max": 50.0, "step": 1.0 },
+        //"Roundness1": { "type": "range", "min": -30.0, "max": 50.0, "step": 1.0 },
+        //"Roundness2": { "type": "range", "min": -30.0, "max": 50.0, "step": 1.0 },
+        //"Roundness3": { "type": "range", "min": -30.0, "max": 50.0, "step": 1.0 },
+        //"Roundness4": { "type": "range", "min": -30.0, "max": 50.0, "step": 1.0 },
+        "Tongue": {
+            "IsMenu": "true",
+            "Mimic": { "type": "button" },
+            "TranslateX": { "type": "range", "min": -200.0, "max": 180.0, "step": 1.0 },
+            "TranslateY": { "type": "range", "min": -200.0, "max": 200.0, "step": 1.0 },
+            "ScaleX": { "type": "range", "min": 0.05, "max": 4.8, "step": 0.05, "default": 3},
+            "ScaleY": { "type": "range", "min": 0.05, "max": 1.6, "step": 0.05, "default": 2},
+            "Rotation": { "type": "range", "min": 0.0, "max": 360.0, "step": 1.0 },
+            "GlobalCurvature": { "type": "range", "min": 0.0, "max": 10, "step": 1.0 },
+            "Curvature1": { "type": "range", "min": -50.0, "max": 50.0, "step": 1.0 },
+            "Curvature2": { "type": "range", "min": -20.0, "max": 20.0, "step": 1.0 },
+            "Curvature3": { "type": "range", "min": -50.0, "max": 50.0, "step": 1.0 },
+            "Curvature4": { "type": "range", "min": -20.0, "max": 20.0, "step": 1.0 },
+            //"Roundness1": { "type": "range", "min": -30.0, "max": 50.0, "step": 1.0 },
+            //"Roundness2": { "type": "range", "min": -30.0, "max": 50.0, "step": 1.0 },
+            //"Roundness3": { "type": "range", "min": -30.0, "max": 50.0, "step": 1.0 },
+            //"Roundness4": { "type": "range", "min": -30.0, "max": 50.0, "step": 1.0 },
+            "ColorFill": { "type": "color", "default": "#000000" },
+        },
+    },
+};

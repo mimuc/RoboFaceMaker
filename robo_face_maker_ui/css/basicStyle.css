@@ -1,0 +1,327 @@
+body {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    background-color: #343A40;
+    color: #ffffff;
+    padding-top: 4rem;
+    min-height: 75rem;
+    overflow: hidden;
+}
+
+.navbar {
+    height: 4.0rem;
+}
+
+.navbar-brand {
+    padding-left: 22px;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: white;
+}
+
+navbar-dark .navbar-brand {
+    color: #EDC7B7;
+}
+
+.navbar-nav .nav-item {
+    margin-right: 15px; 
+}
+
+.navbar-nav .nav-link {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+
+.bg-dark {
+    --bs-bg-opacity: 1;
+}
+
+symbol {
+    font-weight: bold;
+    font-size: larger;
+    display: inline;
+}
+
+.menu-section,
+#sliderBoxTongueM {
+    color: #1a1a1a;
+    margin: 7px;
+    padding: 7px;
+    border-radius: 5px;
+}
+
+#main {
+    height: calc(100vh - 4.0rem);
+    overflow: hidden;
+    padding: 0;
+}
+
+#sideArea {
+    overflow-y: scroll;
+    height: calc(100vh - 4.0rem);
+    width: 25rem;
+    display: block;
+    float: left;
+    margin: 0;
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
+}
+
+#sideArea::-webkit-scrollbar {
+    width: 12px;
+}
+
+#sideArea::-webkit-scrollbar-track {
+    background: #343A40; /* area under the scrollbar */
+}
+
+#sideArea::-webkit-scrollbar-thumb {
+    background-color: #888; /* scrollbar thumb */
+    border-radius: 6px;
+    border: 3px solid #343A40;
+}
+
+#mainContent {
+    height: calc(100vh - 14.0rem);
+    text-align: center;
+    vertical-align: middle;
+    padding: 3rem;
+    margin-left: 25rem;
+    /* adjust the height to consider the navbar and padding */
+    /* padding included in height calculation */
+    box-sizing: border-box;
+    border-top-left-radius: 1rem;
+    background-color: #252526;
+}
+.controls-time {
+    width: 100%;
+    display: flex;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.controls-left {
+    text-align: right;
+    display: inline-flex;
+}
+.controls-left > * {
+    margin-right: 0.2rem; /* or margin-right */
+}
+
+.controls-timeline {
+    flex: 1;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}  
+
+#animation-control {
+    width: calc(100vw - 25.0rem);
+    height: 10.0rem;
+    position: fixed;
+    margin-bottom: 0;
+    margin-left: 25rem;
+    background-color: #252526;
+    padding: 0.2rem 0.4rem;
+}
+
+.bg-light {
+    --bs-bg-opacity: 1,
+}
+
+svg {
+    border: 2px solid #000000;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.list-group-section {
+    width: calc(100% + 2rem);
+    margin-left: -1rem;
+    background-color: #c0dbfa;
+    padding-left: 1rem;
+}
+
+.slider-container {
+    position: relative; /* Position for the slider and circles */
+    width: 100%;
+    pointer-events: none;
+}
+.rectangle {
+    position: absolute;
+    width: 10px; /* Rectangle width */
+    height: 25px; /* Rectangle height */
+    background-color: orange; /* Rectangle color */
+    transform: translate(-50%, -50%); /* Center the rectangle */
+    top: 20px; /* Align rectangles below the slider */
+    cursor: pointer; /* Shows that rectangle is interactive*/
+    pointer-events: auto;
+    z-index: 1; /* Ensure rectangles are above the track but below the thumb */
+    transition: background-color 0.3s; /* Transition for active state */
+}
+.rectangle.active {
+    background-color: green; /* Active rectangle color */
+}
+
+input[type="range"].timeline {
+    -webkit-appearance: none; /* Remove default styles for Webkit browsers */
+    appearance: none; /* Standard property for cross-browser compatibility */
+    width: 100%; /* Full width */
+    height: 10px; /* Height of the slider track */
+    background: #eee; /* Track color */
+    border-radius: 5px; /* Rounded track */
+    outline: none; /* Remove outline */
+    transition: opacity .2s; /* Transition for opacity */
+    position: relative; /* Positioning for the circle */
+    z-index: 3; /* Ensure it is above the track */
+    pointer-events: auto;
+}
+/* Customizing the thumb */
+input[type="range"].timeline::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Remove default styles */
+    appearance: none; /* Remove default styles */
+    width: 20px; /* Width of the thumb */
+    height: 20px; /* Height of the thumb */
+    background: #AC3B61; /* Thumb color */
+    border-radius: 50%; /* Make it round */
+    cursor: pointer; /* Pointer cursor on hover */
+    position: relative; /* Positioning for the circle */
+    z-index: 4; /* Ensure it is above the track */
+}
+input[type="range"].timeline::-moz-range-thumb {
+    width: 20px; /* Width of the thumb */
+    height: 20px; /* Height of the thumb */
+    background: #AC3B61; /* Thumb color */
+    border-radius: 50%; /* Make it round */
+    cursor: pointer; /* Pointer cursor on hover */
+    z-index: 4;
+}
+input[type="range"].timeline::-ms-thumb {
+    width: 15px;
+    height: 15px;
+    background: #AC3B61;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 4;
+}
+
+/* Added this new block to explicitly prioritize slider interaction */
+.slider-container input[type="range"].timeline {
+    pointer-events: auto; /* Ensure slider accepts interaction */
+    z-index: 3; /* Ensure slider is above rectangles */
+    position: absolute; /* Prevent conflict with relative positioning */
+    top: 0; /* Align slider to the top of the container */
+    left: 0; /* Align slider to the left */
+}
+
+.form-control-color-custom {
+    display: inline;
+    margin-left: .5rem;
+}
+
+.list-group-item {
+    margin: 0 !important;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+    padding-top: 0.2rem;
+    padding-bottom: 0.1rem;
+}
+
+#leftArrow, #rightArrow, #playButton, #restartButton {
+    width: 3rem;
+}
+
+#SettingsTimeMax {
+    width: 5rem;
+    display: inline-block;
+}
+
+.btn-primary {
+    color: #EEE2DC;
+    background-color: #245991;
+    border-color: #245991;
+}
+
+.btn-danger {
+    color: #EED2DC;
+    background-color: #AC3B61;
+    border-color: #AC3B61;
+}
+
+.tooltip-inner {
+    background-color: #333; 
+    color: #fff; 
+    border-radius: 10px; 
+    font-size: 16px; 
+    padding: 15px; 
+    max-width: 300px; 
+    text-align: left; 
+}
+
+.tooltip-arrow {
+    color: #333; 
+}
+
+.tooltip.show {
+    transform: scale(1.1); 
+}
+
+.accordion {
+    margin-top: 0.2rem;
+    margin-bottom: 0.4rem;
+    overflow: hidden;
+}
+
+.accordion-button {
+    padding: 1rem 1rem;
+    background-color: #262626;
+    color: #eee2dc;
+}
+
+.accordion-button.collapsed {
+    background-color: #262626;
+    color: #eee2dc;
+}
+
+.accordion-button:not(.collapsed) {
+    color: #eee2dc;
+    background-color: #262626;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .125);
+}
+
+.accordion-button::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+
+.accordion-body {
+    background-color: rgb(67, 67, 67);
+    padding: 1rem;
+}
+
+
+.form-select {
+    background-color: #BAB2B5;
+}
+
+#undoButton {
+    background-color: #b88e38; 
+}
+
+#undoButton:hover {
+    background-color: #e6b800; 
+}
+
+#InputCurrentTime {
+    display: inline-block;
+    width: 5rem;
+}
+
+
+.modal-content {
+    background-color: #343A40;
+    color: #eee2dc;
+}

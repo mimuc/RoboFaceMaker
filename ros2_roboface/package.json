@@ -1,0 +1,17 @@
+{
+  "name": "ros2_roboface",
+  "version": "1.0.0",
+  "description": "ROS2 rosbridge-based face display node",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
+}

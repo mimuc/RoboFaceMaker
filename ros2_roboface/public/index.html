@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RoboFace Display</title>
+  <style>
+    body {
+      overflow: hidden;
+      padding: 0;
+      margin: 0;
+      background-color: #333;
+    }
+    svg {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+    path {
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+  </style>
+</head>
+
+<body data-ros-status="disconnected">
+
+  <svg id="svg" viewBox="0 0 1024 768" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path id="BrowLeft"></path>
+    <path id="BrowRight"></path>
+
+    <path id="EyeLeftFill"></path>
+    <clipPath id="EyeLeftIrisClipContainerPath">
+      <path id="EyeLeftIrisPath"></path>
+    </clipPath>
+    <path id="EyeLeftStroke"></path>
+    <use clip-path="url(#EyeLeftIrisClipContainerPath)" id="EyeLeftIrisClipColor" href="#EyeLeftStroke"></use>
+
+    <path id="EyeRightFill"></path>
+    <clipPath id="EyeRightIrisClipContainerPath">
+      <path id="EyeRightIrisPath"></path>
+    </clipPath>
+    <path id="EyeRightStroke"></path>
+    <use clip-path="url(#EyeRightIrisClipContainerPath)" id="EyeRightIrisClipColor" href="#EyeRightStroke"></use>
+
+    <path id="MouthLine"></path>
+    <path id="MouthFill"></path>
+    <clipPath id="MouthTongueClipContainerPath">
+      <path id="TonguePath"></path>
+    </clipPath>
+    <path id="MouthStroke"></path>
+    <use clip-path="url(#MouthTongueClipContainerPath)" id="MouthTongueClipColor" href="#MouthStroke"></use>
+    <path id="MouthSmileFill"></path>
+    <path id="MouthSmileStroke"></path>
+    <use clip-path="url(#MouthTongueClipContainerPath)" id="MouthTongueSmileClipColor" href="#MouthSmileStroke"></use>
+  </svg>
+
+  <!-- roslibjs from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
+
+  <!-- State machine (CommonJS/browser dual-mode) -->
+  <script src="./js/stateMachine.js"></script>
+
+  <!-- rosbridge client -->
+  <script src="./js/rosClient.js"></script>
+
+  <!-- Player rendering modules -->
+  <script type="module">
+    import { updateEyes } from './js/player/eyes.js';
+    import { updateMouth } from './js/player/mouth.js';
+    import { updateBrows } from './js/player/brows.js';
+
+    // Parse config from URL query params
+    const params = new URLSearchParams(window.location.search);
+    const rosbridgeUrl = params.get('rosbridge') || 'ws://localhost:9090';
+    const dbBase = params.get('db') || '/presets/';
+
+    function updateSvgSettings(frame) {
+      const { BackgroundColor, Size } = frame.Settings || {};
+      if (BackgroundColor) {
+        document.body.style.backgroundColor = BackgroundColor;
+      }
+      if (Size?.Width && Size?.Height) {
+        document.getElementById('svg').setAttribute('viewBox', `0 0 ${Size.Width} ${Size.Height}`);
+      }
+    }
+
+    function renderFrame(frame) {
+      updateSvgSettings(frame);
+      updateEyes(frame, document);
+      updateBrows(frame, document);
+      updateMouth(frame, document);
+    }
+
+    async function fetchFace(id) {
+      const url = `${dbBase}${id}.json`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Face not found: ${id} (${url})`);
+      return res.json();
+    }
+
+    const sm = createStateMachine({ onRender: renderFrame, fetchFace });
+    connectRosBridge(sm, rosbridgeUrl);
+  </script>
+</body>
+</html>

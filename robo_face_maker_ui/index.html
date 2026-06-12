@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboFaceMaker</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/basicStyle.css">
+</head>
+
+<body onload="refreshSettings()">
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top">
+        <a class="navbar-brand" href="#">RoboFaceMaker</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span
+                class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        File
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><input type="file" id="jsonFileInput" style="display:none;" accept=".json"
+                        onchange="loadSettingsFromJson(event)"><a class="dropdown-item" id="uploadImageButton" href="#"
+                        onclick="document.getElementById('jsonFileInput').click()">Upload Json</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="downloadJson()">Save as Json</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="downloadImage()">Save as Image</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Edit
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="undoLastChange()">Undo<span id="menuUndoShortcutLabel" class="text-muted float-end"></span></a></li>
+                        <li><a class="dropdown-item"  onclick="saveCurrentFrameAsPreset()">Save Keyframe as Preset</a></li>
+                        <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#settingsModal" onclick="openSettingsPanel()">Settings...</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="helpTooltip" href="#" data-bs-toggle="tooltip" data-bs-html="true" title="
+                        <ul style='margin: 0; padding-left: 20px;'>
+                            <li>Use the sliders on the left, to change the properties of the face.</li>
+                            <li>Click on 'Set as Active Keyframe' to start creating a new face.</li>
+                            <li>Click on 'Delete chosen Keyframe' to delete a keyframe.</li>
+                            <li>Click on 'Undo last Change' to revert modification and restore the previous state.</li>
+                            <li>Press the play button to start or stop the animation.</li>
+                            <li>Use ← and → to navigate through the frames.</li>
+                            <li>You can also use your mouse to navigate through the timeline.</li>
+                            <li>The Restart button resets the animation to frame 0.</li>
+                            <li>To save your animation, choose one option.</li>
+                        </ul>
+                    ">Help</a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+    <main id="main" role="main" class="container-fluid">
+
+        <!--left coloumn for checkboxes, sliders etc.-->
+        <section id="sideArea">
+
+        </section>
+
+
+        <!--main right column: SVGs for eyes and mouth-->
+        <section id="mainContent" class="justify-content">
+            <svg id="svg" viewBox="0 0 1000 700" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+
+                <!-- Left Eyebrow -->
+                <path id="BrowLeft" stroke="black" stroke-width="4" fill="none" stroke-linecap="round"
+                stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+
+                <!-- Right Eyebrow -->
+                <path id="BrowRight" stroke="black" stroke-width="4" fill="none" stroke-linecap="round"
+                stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+
+
+                <!--left eye-->
+                <path id="EyeLeftFill" fill="black" stroke="black" stroke-width="4" stroke-linecap="round"
+                    stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+
+                <clipPath id="EyeLeftIrisClipContainerPath">
+                    <path id="EyeLeftIrisPath" display="none" />
+                </clipPath>
+
+                <path id="EyeLeftStroke" fill="" stroke="black" stroke-width="4" stroke-linecap="round"
+                    stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+
+                <use clip-path="url(#EyeLeftIrisClipContainerPath)" id="EyeLeftIrisClipColor"
+                    href="#EyeLeftStroke" fill="white" stroke="87CEFA" stroke-width="2" />
+
+
+                <!--right eye-->
+                <path id="EyeRightFill" fill="black" stroke="black" stroke-width="4" stroke-linecap="round"
+                    stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+
+                <clipPath id="EyeRightIrisClipContainerPath">
+                    <path id="EyeRightIrisPath" display="none" />
+                </clipPath>
+
+                <path id="EyeRightStroke" fill="" stroke="black" stroke-width="4" stroke-linecap="round"
+                    stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+
+                <use clip-path="url(#EyeRightIrisClipContainerPath)" id="EyeRightIrisClipColor"
+                    href="#EyeRightStroke" fill="white" stroke="87CEFA" stroke-width="2" />
+
+
+                <!--mouth-->
+                <path id="MouthLine" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"
+                    vector-effect="non-scaling-stroke" />
+
+                <path id="MouthFill" fill="black" stroke="black" stroke-width="4" stroke-linecap="round"
+                    stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                <clipPath id="MouthTongueClipContainerPath">
+                    <path id="MouthTonguePath" />
+                </clipPath>
+                <path id="MouthStroke" stroke="black" stroke-width="4" stroke-linecap="round"
+                    stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                <use clip-path="url(#MouthTongueClipContainerPath)" id="MouthTongueClipColor" href="#MouthStroke"
+                    fill="#c4371d" stroke-width="2" />
+
+                <path id="MouthSmileFill" fill="black" stroke="black" stroke-width="4" stroke-linecap="round"
+                    stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                <path id="MouthSmileStroke" stroke="black" stroke-width="4" stroke-linecap="round"
+                    stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                <use clip-path="url(#MouthTongueClipContainerPath)" id="MouthTongueSmileClipColor"
+                    href="#MouthSmileStroke" fill="#c4371d" stroke-width="2" />
+
+
+            </svg>
+        </section>
+
+        <footer id="animation-control" class="footer bottom-0">
+            <div class="justify-content">
+                <div class="controls-time">
+                    <div class="controls-left">
+                        <input class="form-control" id="InputCurrentTime" type="number" title="Active Key Frame" value="0" onchange="frameChange(this)" disabled></p>
+                        <button id="leftArrow" class="form-control btn btn-primary" onclick="frameChangeFrameStep(-1)">←</button>
+                        <button id="rightArrow" class="form-control btn btn-primary" onclick="frameChangeFrameStep(1)">→</button>
+                        <button id="playButton" class="form-control btn btn-primary" onclick="frameToggleAnimation()">▶</button>
+                        <button id="restartButton" class="form-control btn btn-primary" onclick="restartAnimation()" tooltip="Restart">⏮</button>
+                    </div>
+                    <div class="controls-timeline">
+                        <div class="slider-container">
+                        <input class="timeline" type="range" id="time" name="time" min="0" max="100" step="1" oninput="frameChange(this)" style="width: 100%;" list="markers"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-md-center">
+                    <div class="col-2">
+                        <button id="setActiveFrameButton" class="btn btn-primary" onclick="setActiveKeyFrame()">Set as Active Keyframe</button>
+                    </div>
+                    <div class="col-2">
+                        <button id="deleteKeyframeButton" class="btn btn-danger" onclick="deleteKeyframe()">Delete chosen Keyframe</button>
+                    </div>
+
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeSettingsPanel()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Settings for width and height of the face -->
+                <div class="form-group">
+                    <label for="SettingsPanelFaceWidth">Face Width:</label>
+                    <input type="number" class="form-control" id="SettingsPanelFaceWidth" value="200">
+                </div>
+                <div class="form-group">
+                    <label for="SettingsPanelFaceHeight">Face Height:</label>
+                    <input type="number" class="form-control" id="SettingsPanelFaceHeight" value="200">
+                </div>
+                <div class="form-group">
+                    <label for="SettingsPanelTimeMax">Face Color:</label>
+                    <input type="number" class="form-control" id="SettingsPanelTimeMax" value="100">
+                    <small class="form-text text-muted">Set the maximum time for the face animation.</small>
+                </div>
+                <div class="form-group">
+                    <label for="SettingsPanelTimeSpeed">Playback Speed:</label>
+                    <input type="number" class="form-control" id="SettingsPanelTimeSpeed" value="30" step="1">
+                    <small class="form-text text-muted">Set the speed of the animation in Frames per Second.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeSettingsPanel()">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettingsPanel()">Save changes</button>
+            </div>
+            </div>
+        </div>
+    </div>
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+    crossorigin="anonymous"></script>
+    <script src="./js/presets.js"></script>
+    <script src="./js/settingdefaults.js"></script>
+    <script src="./lang/en.js"></script>
+    <script src="./js/model.js"></script>
+    <script src="./js/ui.js"></script>
+    <script src="./js/basicScript.js"></script>
+    <script src="./js/eyeScript.js"></script>
+    <script src="./js/eyeBrowScript.js"></script>
+    <script src="./js/mouthScript.js"></script>
+    <script src="./js/frameControl.js"></script>
+    <script src="./js/animation.js"></script>
+
+
+
+</body>
+
+</html>
