@@ -56,7 +56,9 @@
     <use clip-path="url(#MouthTongueClipContainerPath)" id="MouthTongueSmileClipColor" href="#MouthSmileStroke"></use>
   </svg>
 
-  <!-- roslibjs from CDN -->
+  <script src="/config.js"></script>
+
+  <!-- roslibjs from CDN (used in ROS mode) -->
   <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
 
   <!-- State machine (CommonJS/browser dual-mode) -->
@@ -64,6 +66,7 @@
 
   <!-- rosbridge client -->
   <script src="./js/rosClient.js"></script>
+  <script src="./js/standaloneClient.js"></script>
 
   <!-- Player rendering modules -->
   <script type="module">
@@ -101,7 +104,11 @@
     }
 
     const sm = createStateMachine({ onRender: renderFrame, fetchFace });
-    connectRosBridge(sm, rosbridgeUrl);
+    if (window.ROBOFACE_MODE === 'standalone') {
+      connectStandalone(sm);
+    } else {
+      connectRosBridge(sm, rosbridgeUrl);
+    }
   </script>
 </body>
 </html>

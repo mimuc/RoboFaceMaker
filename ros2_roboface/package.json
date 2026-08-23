@@ -5,6 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "start:standalone": "node server.js --mode=standalone",
+    "start:ros": "node server.js --mode=ros",
     "test": "jest"
   },
   "devDependencies": {

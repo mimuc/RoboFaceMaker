@@ -3,8 +3,15 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT || 3000;
+const modeArg = process.argv.find(arg => arg.startsWith('--mode='));
+const MODE = modeArg ? modeArg.slice('--mode='.length) : (process.env.ROBOFACE_MODE || 'ros');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const PRESETS_DIR = path.join(__dirname, '..', 'presets');
+const eventClients = new Set();
+
+if (!['ros', 'standalone'].includes(MODE)) {
+  throw new Error(`Invalid mode "${MODE}". Use "ros" or "standalone".`);
+}
 
 const MIME = {
   '.html': 'text/html',
@@ -15,6 +22,47 @@ const MIME = {
 
 const server = http.createServer((req, res) => {
   const urlPathname = new URL(req.url, 'http://localhost').pathname;
+
+  if (urlPathname === '/config.js' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/javascript' });
+    res.end(`window.ROBOFACE_MODE = ${JSON.stringify(MODE)};`);
+    return;
+  }
+
+  if (urlPathname === '/events' && req.method === 'GET' && MODE === 'standalone') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    });
+    res.write(': connected\n\n');
+    eventClients.add(res);
+    req.on('close', () => eventClients.delete(res));
+    return;
+  }
+
+  if (urlPathname === '/commands' && req.method === 'POST' && MODE === 'standalone') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      let command;
+      try { command = JSON.parse(body); } catch {
+        res.writeHead(400);
+        res.end('Invalid JSON');
+        return;
+      }
+      if (!['loadFace', 'play', 'pause', 'stop'].includes(command.type)) {
+        res.writeHead(400);
+        res.end('Invalid command');
+        return;
+      }
+      const event = `data: ${JSON.stringify(command)}\n\n`;
+      eventClients.forEach(client => client.write(event));
+      res.writeHead(204);
+      res.end();
+    });
+    return;
+  }
 
   if (req.method === 'POST') {
     const match = urlPathname.match(/^\/presets\/([^/]+)$/);
@@ -99,6 +147,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`RoboFace server running at http://localhost:${PORT}`);
+  console.log(`Mode: ${MODE}`);
   console.log(`Serving faces from: ${PRESETS_DIR}`);
 });
 
