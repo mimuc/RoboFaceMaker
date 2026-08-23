@@ -18,20 +18,24 @@ function updateBackgroundColor() {
 }
 
 /**
- * Serializes the current SVG and downloads it as a JPEG image.
+ * Serializes the current SVG and downloads it as a PNG image.
  */
 function downloadImage() {
 
-    // Get the SVG element and serialize its content
+    // Export at the configured face size, independent of the responsive UI size.
     const svg = document.getElementById('svg');
-    const svgData = new XMLSerializer().serializeToString(svg);
+    const width = paramsFace.Settings.Size.Width;
+    const height = paramsFace.Settings.Size.Height;
+    const exportSvg = svg.cloneNode(true);
+    exportSvg.setAttribute('width', width);
+    exportSvg.setAttribute('height', height);
+    const svgData = new XMLSerializer().serializeToString(exportSvg);
 
     // Create a canvas and context for drawing the image
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const svgSize = svg.getBoundingClientRect();
-    canvas.width = svgSize.width;
-    canvas.height = svgSize.height;
+    canvas.width = width;
+    canvas.height = height;
 
     // Fill the canvas background with the defined color
     ctx.fillStyle = paramsFace["Frames"][paramsTime["Time"]]["Settings"]["BackgroundColor"];
@@ -40,12 +44,12 @@ function downloadImage() {
     // Create an image to render the SVG onto the canvas
     const img = new Image();
     img.onload = function () {
-        ctx.drawImage(img, 0, 0);
+        ctx.drawImage(img, 0, 0, width, height);
         // Save the canvas content as an image
         canvas.toBlob(function (blob) {
             const imageUrl = URL.createObjectURL(blob);
-            triggerDownload(imageUrl, 'face.jpg');
-        }, 'image/jpeg');
+            triggerDownload(imageUrl, 'face.png');
+        }, 'image/png');
     };
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
 }
