@@ -2,6 +2,21 @@
  * Updates the SVG viewBox dimensions based on the current face settings.
  */
 function updateSettings(){
+    const width = paramsFace.Settings.Size.Width;
+    const height = paramsFace.Settings.Size.Height;
+
+    // Keep the face layout proportional to the configured canvas size.
+    paramsDefault.EyeLeft.StartOffsetX = width * 0.25;
+    paramsDefault.EyeRight.StartOffsetX = width * 0.75;
+    paramsDefault.Mouth.StartOffsetX = width * 0.5;
+    paramsDefault.BrowLeft.StartOffsetX = width * 0.25;
+    paramsDefault.BrowRight.StartOffsetX = width * 0.75;
+    paramsDefault.EyeLeft.StartOffsetY = height * (270 / 700);
+    paramsDefault.EyeRight.StartOffsetY = height * (270 / 700);
+    paramsDefault.Mouth.StartOffsetY = height - 175;
+    paramsDefault.BrowLeft.StartOffsetY = height * (187 / 700) - 87;
+    paramsDefault.BrowRight.StartOffsetY = height * (187 / 700) - 87;
+
     const svgBackground = document.getElementById('svg');
     document.getElementById("svg").viewBox.baseVal.width = paramsFace["Settings"]["Size"]["Width"];
     document.getElementById("svg").viewBox.baseVal.height = paramsFace["Settings"]["Size"]["Height"];
