@@ -18,9 +18,9 @@ RoboFaceMaker/
 3. **Run the display node** from `ros2_roboface/`:
    ```bash
    npm install
-   npm start
+   npm run start:standalone OR npm run start:ros
    ```
-   Open `http://localhost:3000` on the robot display. Configure the rosbridge URL via the `?rosbridge=` query param if the ROS2 bridge is on a different host.
+   Open `http://localhost:3000` on the robot display. Configure the rosbridge URL via the `?rosbridge=` query param if the ROS2 bridge is on a different host and using ros mode.
 4. **Control via ROS2 topics** published by your robot's behaviour layer:
 
    | Topic | Type | Effect |
