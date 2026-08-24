@@ -5,15 +5,23 @@ JavaScript-based ROS2 face display node. Serves a fullscreen SVG face in the bro
 ## Prerequisites
 
 - Node.js 18+
-- A running [rosbridge_suite](https://github.com/RobotWebTools/rosbridge_suite) WebSocket server (default port 9090)
+- A running [rosbridge_suite](https://github.com/RobotWebTools/rosbridge_suite) WebSocket server (default port 9090) when using ROS mode
 - Face JSON files in the `../presets/` folder (export from the `robo_face_maker_ui` editor)
 
 ## Install and start
 
 ```bash
 npm install
-npm start
+
+# Standalone Node.js mode (no ROS required)
+npm run start:standalone
+
+# ROS/rosbridge mode
+npm run start:ros
 ```
+
+The mode can also be passed explicitly with
+`npm start -- --mode=standalone` or `npm start -- --mode=ros`.
 
 The server starts at `http://localhost:3000`. Open that URL in a browser on the robot display.
 

@@ -174,12 +174,14 @@
     </div>
   </section>
 
+  <script src="/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"></script>
   <script>
     const params = new URLSearchParams(window.location.search);
     const rosbridgeUrl = params.get('rosbridge') || 'ws://localhost:9090';
+    const standalone = window.ROBOFACE_MODE === 'standalone';
 
-    const ros = new ROSLIB.Ros({ url: rosbridgeUrl });
+    const ros = standalone ? null : new ROSLIB.Ros({ url: rosbridgeUrl });
 
     const statusDot  = document.getElementById('status-dot');
     const statusText = document.getElementById('status-text');
@@ -189,17 +191,21 @@
       statusText.textContent = text;
     }
 
-    ros.on('connection', () => {
-      setStatus('connected', `Connected to ${rosbridgeUrl}`);
-      refreshFaces();
-    });
-    ros.on('error',  () => setStatus('error', 'Connection error'));
-    ros.on('close',  () => {
-      setStatus('disconnected', 'Disconnected — retrying…');
-      setTimeout(() => ros.connect(rosbridgeUrl), 3000);
-    });
+    if (standalone) {
+      setStatus('connected', 'Standalone mode');
+    } else {
+      ros.on('connection', () => {
+        setStatus('connected', `Connected to ${rosbridgeUrl}`);
+        refreshFaces();
+      });
+      ros.on('error',  () => setStatus('error', 'Connection error'));
+      ros.on('close',  () => {
+        setStatus('disconnected', 'Disconnected — retrying…');
+        setTimeout(() => ros.connect(rosbridgeUrl), 3000);
+      });
+    }
 
-    const topics = {
+    const topics = standalone ? {} : {
       loadFace:  new ROSLIB.Topic({ ros, name: '/roboface/load_face',  messageType: 'std_msgs/String' }),
       play:      new ROSLIB.Topic({ ros, name: '/roboface/play',       messageType: 'std_msgs/String' }),
       pause:     new ROSLIB.Topic({ ros, name: '/roboface/pause',      messageType: 'std_msgs/Empty'  }),
@@ -208,8 +214,7 @@
       facesList: new ROSLIB.Topic({ ros, name: '/roboface/faces_list', messageType: 'std_msgs/String' }),
     };
 
-    topics.facesList.subscribe((msg) => {
-      const faces = JSON.parse(msg.data);
+    function updateFaces(faces) {
       const sel = document.getElementById('face-select');
       const current = sel.value;
       sel.innerHTML = '<option value="">— select face —</option>';
@@ -221,29 +226,65 @@
       if (current) sel.value = current;
       document.getElementById('faces-list').textContent =
         faces.length ? `${faces.length} face(s) available` : 'No faces found in presets/';
-    });
+    }
+
+    if (!standalone) {
+      topics.facesList.subscribe((msg) => {
+        updateFaces(JSON.parse(msg.data));
+      });
+    }
+
+    function sendStandalone(type, data) {
+      return fetch('/commands', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, data }),
+      }).then(r => {
+        if (!r.ok) throw new Error(`Command failed: HTTP ${r.status}`);
+      });
+    }
 
     function loadFace() {
       const id = document.getElementById('face-select').value;
       if (!id) return;
-      topics.loadFace.publish(new ROSLIB.Message({ data: id }));
+      if (standalone) sendStandalone('loadFace', id);
+      else topics.loadFace.publish(new ROSLIB.Message({ data: id }));
     }
 
     function play(mode) {
-      topics.play.publish(new ROSLIB.Message({ data: mode }));
+      if (standalone) sendStandalone('play', mode);
+      else topics.play.publish(new ROSLIB.Message({ data: mode }));
     }
 
     function pause() {
-      topics.pause.publish(new ROSLIB.Message({}));
+      if (standalone) sendStandalone('pause');
+      else topics.pause.publish(new ROSLIB.Message({}));
     }
 
     function stop() {
-      topics.stop.publish(new ROSLIB.Message({}));
+      if (standalone) sendStandalone('stop');
+      else topics.stop.publish(new ROSLIB.Message({}));
     }
 
     function refreshFaces() {
-      topics.listFaces.publish(new ROSLIB.Message({}));
+      if (!standalone && ros.isConnected) {
+        topics.listFaces.publish(new ROSLIB.Message({}));
+        return;
+      }
+
+      fetch('/presets/')
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        })
+        .then(updateFaces)
+        .catch(err => {
+          document.getElementById('faces-list').textContent =
+            `Could not load presets: ${err.message}`;
+        });
     }
+
+    refreshFaces();
 
     const dropZone = document.getElementById('drop-zone');
     const uploadFeedback = document.getElementById('upload-feedback');

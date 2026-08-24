@@ -293,6 +293,9 @@ function saveSettingsPanel() {
     document.getElementById('SettingsPanelTimeSpeed').value = paramsFace["Settings"]["TimeSpeed"];
     
     updateSettings();
+    refreshEye();
+    refreshMouth();
+    refreshEyebrows();
 
 }
 
